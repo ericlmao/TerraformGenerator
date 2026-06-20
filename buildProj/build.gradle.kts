@@ -28,23 +28,20 @@ dependencies {
     implementation("com.github.AvarionMC:yaml:1.1.7")
 }
 
+val pluginConfig = file("${rootProject.projectDir}/common/src/main/resources/plugin.yml").inputStream().use {
+    org.yaml.snakeyaml.Yaml().load<Map<String, Any>>(it)
+}
+
 tasks.shadowJar {
     //This will break all versions before 1.21.9.
     // Can't do much about that.
     manifest {
         attributes["paperweight-mappings-namespace"] = "mojang"
     }
-	
-    doFirst {
-        val yamlFile = file("${rootProject.projectDir}/common/src/main/resources/plugin.yml")
-        val yaml = org.yaml.snakeyaml.Yaml()
-        val config = yaml.load<Map<String, Any>>(yamlFile.inputStream())
 
-        // Set the archive name and version based on the plugin.yml file
-        archiveBaseName.set(config["name"].toString())
-        archiveVersion.set(config["version"].toString())
-        archiveClassifier.set("") // Don't add the '-all' postfix.
-    }
+    archiveBaseName.set(pluginConfig["name"].toString())
+    archiveVersion.set(pluginConfig["version"].toString())
+    archiveClassifier.set("")
 
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 

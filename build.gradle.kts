@@ -7,6 +7,21 @@ plugins {
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.21" apply false
 }
 
+val finalJar by tasks.registering(Copy::class) {
+    dependsOn(":buildProj:shadowJar")
+    from(project(":buildProj").layout.buildDirectory.dir("libs"))
+    include("TerraformGenerator-*.jar")
+    into(layout.buildDirectory.dir("libs"))
+}
+
+tasks.named("jar") {
+    enabled = false
+}
+
+tasks.named("build") {
+    dependsOn(finalJar)
+}
+
 subprojects {
     apply<JavaPlugin>()
 
