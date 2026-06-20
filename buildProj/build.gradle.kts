@@ -26,14 +26,10 @@ dependencies {
     implementation(project(":implementation:v26_1"))
     implementation(project(":implementation:v26_2"))
     implementation("com.github.AvarionMC:yaml:1.1.7")
-	
-	if(project.hasProperty("includeSpigot")){
-		//Also change the one in shadowJar. Remember to have --remapped in Buildtools.
-		implementation(project(":implementation:Spigotv1_21_R6"))
-		implementation(project(":implementation:Spigotv1_21_R7"))
-        implementation(project(":implementation:Spigotv26_1"))
-        implementation(project(":implementation:Spigotv26_2"))
-	}
+}
+
+val pluginConfig = file("${rootProject.projectDir}/common/src/main/resources/plugin.yml").inputStream().use {
+    org.yaml.snakeyaml.Yaml().load<Map<String, Any>>(it)
 }
 
 tasks.shadowJar {
@@ -43,22 +39,9 @@ tasks.shadowJar {
         attributes["paperweight-mappings-namespace"] = "mojang"
     }
 
-	//Make the spigot build shadow itself
-	if(project.hasProperty("includeSpigot")){
-		dependsOn(":implementation:Spigotv1_21_R6:remap")
-		dependsOn(":implementation:Spigotv1_21_R7:remap")
-	}
-	
-    doFirst {
-        val yamlFile = file("${rootProject.projectDir}/common/src/main/resources/plugin.yml")
-        val yaml = org.yaml.snakeyaml.Yaml()
-        val config = yaml.load<Map<String, Any>>(yamlFile.inputStream())
-
-        // Set the archive name and version based on the plugin.yml file
-        archiveBaseName.set(config["name"].toString())
-        archiveVersion.set(config["version"].toString())
-        archiveClassifier.set("") // Don't add the '-all' postfix.
-    }
+    archiveBaseName.set(pluginConfig["name"].toString())
+    archiveVersion.set(pluginConfig["version"].toString())
+    archiveClassifier.set("")
 
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 

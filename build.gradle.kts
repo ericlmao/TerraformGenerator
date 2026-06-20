@@ -7,18 +7,29 @@ plugins {
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.21" apply false
 }
 
+val finalJar by tasks.registering(Copy::class) {
+    dependsOn(":buildProj:shadowJar")
+    from(project(":buildProj").layout.buildDirectory.dir("libs"))
+    include("TerraformGenerator-*.jar")
+    into(layout.buildDirectory.dir("libs"))
+}
+
+tasks.named("jar") {
+    enabled = false
+}
+
+tasks.named("build") {
+    dependsOn(finalJar)
+}
+
 subprojects {
     apply<JavaPlugin>()
 
     group = "org.terraform"
     repositories {
         mavenCentral()
-		
-		//For spigot local jars
-		mavenLocal()
-		
-		//For SpecialSource
-		maven("https://hub.spigotmc.org/nexus/content/repositories/public/")
+        mavenLocal()
+        maven("https://hub.spigotmc.org/nexus/content/repositories/public/")
         maven("https://repo.codemc.io/repository/nms/")
 		maven("https://repo.papermc.io/repository/maven-public/")
 		maven("https://jitpack.io")
